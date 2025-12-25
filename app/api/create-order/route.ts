@@ -1,14 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Razorpay from 'razorpay'
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || '',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || '',
-})
+function getRazorpayInstance() {
+  const keyId = process.env.RAZORPAY_KEY_ID
+  const keySecret = process.env.RAZORPAY_KEY_SECRET
+
+  if (!keyId || !keySecret) {
+    throw new Error('Razorpay credentials not configured')
+  }
+
+  return new Razorpay({
+    key_id: keyId,
+    key_secret: keySecret,
+  })
+}
 
 export async function POST(request: NextRequest) {
   try {
     const { amount, type, input } = await request.json()
+
+    const razorpay = getRazorpayInstance()
 
     const options = {
       amount: amount, // amount in paise
