@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 const MAX_CHARS = 200
 
-export default function InputPage() {
+function InputForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const type = searchParams.get('type') || 'yes-no'
@@ -63,6 +63,20 @@ export default function InputPage() {
         </button>
       </div>
     </main>
+  )
+}
+
+export default function InputPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center">
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </main>
+    }>
+      <InputForm />
+    </Suspense>
   )
 }
 

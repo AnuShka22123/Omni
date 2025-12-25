@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 
 const VERDICT_TEMPLATES: Record<string, { verdicts: string[], justifications: string[] }> = {
   'yes-no': {
@@ -53,7 +53,7 @@ function getVerdict(type: string, input: string): { verdict: string; justificati
   }
 }
 
-export default function VerdictPage() {
+function VerdictContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const type = searchParams.get('type') || 'yes-no'
@@ -108,6 +108,20 @@ export default function VerdictPage() {
         </div>
       </div>
     </main>
+  )
+}
+
+export default function VerdictPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center">
+          <p className="text-gray-400">Loading verdict...</p>
+        </div>
+      </main>
+    }>
+      <VerdictContent />
+    </Suspense>
   )
 }
 

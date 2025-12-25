@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 const messages = [
@@ -9,7 +9,7 @@ const messages = [
   'Delivering verdict…',
 ]
 
-export default function LoadingPage() {
+function LoadingContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const type = searchParams.get('type') || 'yes-no'
@@ -40,6 +40,20 @@ export default function LoadingPage() {
         </p>
       </div>
     </main>
+  )
+}
+
+export default function LoadingPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center">
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      </main>
+    }>
+      <LoadingContent />
+    </Suspense>
   )
 }
 
