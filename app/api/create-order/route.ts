@@ -1,25 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Razorpay from 'razorpay'
 
-function getRazorpayInstance() {
-  const keyId = process.env.RAZORPAY_KEY_ID
-  const keySecret = process.env.RAZORPAY_KEY_SECRET
-
-  if (!keyId || !keySecret) {
-    throw new Error('Razorpay credentials not configured')
-  }
-
-  return new Razorpay({
-    key_id: keyId,
-    key_secret: keySecret,
-  })
-}
+// Force dynamic rendering to prevent build-time evaluation
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
 export async function POST(request: NextRequest) {
   try {
     const { amount, type, input } = await request.json()
 
-    const razorpay = getRazorpayInstance()
+    // Dynamic import only at runtime - never during build
+    const { createRazorpayInstance } = await import('@/lib/razorpay')
+    const razorpay = await createRazorpayInstance()
 
     const options = {
       amount: amount, // amount in paise
@@ -39,7 +30,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Order creation error:', error)
     return NextResponse.json(
-      { error: 'Failed to create order' },
+      { error: error.message || 'Failed to create order' },
       { status: 500 }
     )
   }
