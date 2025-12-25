@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Script from 'next/script'
 
+export const dynamic = 'force-dynamic'
+
 declare global {
   interface Window {
     Razorpay: any

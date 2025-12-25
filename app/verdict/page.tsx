@@ -3,6 +3,8 @@
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState, Suspense } from 'react'
 
+export const dynamic = 'force-dynamic'
+
 const VERDICT_TEMPLATES: Record<string, { verdicts: string[], justifications: string[] }> = {
   'yes-no': {
     verdicts: ['YES', 'NO'],

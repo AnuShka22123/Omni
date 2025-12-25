@@ -3,6 +3,8 @@
 import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
+export const dynamic = 'force-dynamic'
+
 const messages = [
   'Reading your situation…',
   'Removing bias…',
