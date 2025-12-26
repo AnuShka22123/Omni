@@ -4,9 +4,14 @@ import OpenAI from 'openai'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-})
+// Initialize OpenAI only if API key is available
+const getOpenAIClient = () => {
+  const apiKey = process.env.OPENAI_API_KEY
+  if (!apiKey) {
+    return null
+  }
+  return new OpenAI({ apiKey })
+}
 
 const VERDICT_TYPES: Record<string, { verdicts: string[], prompt: string }> = {
   'yes-no': {
@@ -41,7 +46,12 @@ export async function POST(request: NextRequest) {
 
     const verdictConfig = VERDICT_TYPES[type] || VERDICT_TYPES['yes-no']
 
-    const systemPrompt = `You are a wise, mystical decision advisor. Your role is to provide clear, confident verdicts that help people move forward. 
+    // Check if OpenAI API key is available
+    const openai = getOpenAIClient()
+    
+    if (openai) {
+      // Use AI to generate verdict
+      const systemPrompt = `You are a wise, mystical decision advisor. Your role is to provide clear, confident verdicts that help people move forward. 
 Your responses should be:
 - Decisive and confident
 - Mystical but not vague
@@ -51,42 +61,44 @@ Your responses should be:
 
 Format your response as JSON: {"verdict": "YES/NO/THIS/THAT/NOW/LATER", "justification": "your brief mystical justification"}`
 
-    const userPrompt = `${verdictConfig.prompt}
+      const userPrompt = `${verdictConfig.prompt}
 
 User's situation: "${input}"
 
 Respond with only valid JSON in this exact format:
 {"verdict": "VERDICT", "justification": "justification text"}`
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-      temperature: 0.7,
-      max_tokens: 150,
-      response_format: { type: 'json_object' },
-    })
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.7,
+        max_tokens: 150,
+        response_format: { type: 'json_object' },
+      })
 
-    const content = completion.choices[0]?.message?.content
-    if (!content) {
-      throw new Error('No response from AI')
+      const content = completion.choices[0]?.message?.content
+      if (content) {
+        const result = JSON.parse(content)
+        
+        // Validate verdict is one of the allowed options
+        if (!verdictConfig.verdicts.includes(result.verdict)) {
+          // Fallback: use hash-based selection if AI returns invalid verdict
+          const hash = input.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+          result.verdict = verdictConfig.verdicts[hash % verdictConfig.verdicts.length]
+        }
+
+        return NextResponse.json({
+          verdict: result.verdict,
+          justification: result.justification || 'The decision is made. Move forward.',
+        })
+      }
     }
-
-    const result = JSON.parse(content)
     
-    // Validate verdict is one of the allowed options
-    if (!verdictConfig.verdicts.includes(result.verdict)) {
-      // Fallback: use hash-based selection if AI returns invalid verdict
-      const hash = input.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-      result.verdict = verdictConfig.verdicts[hash % verdictConfig.verdicts.length]
-    }
-
-    return NextResponse.json({
-      verdict: result.verdict,
-      justification: result.justification || 'The decision is made. Move forward.',
-    })
+    // Fall through to fallback if no API key or AI fails
+    throw new Error('AI not available, using fallback')
   } catch (error: any) {
     console.error('Verdict generation error:', error)
     
