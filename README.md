@@ -22,10 +22,11 @@ npm install
 cp .env.example .env.local
 ```
 
-Fill in your Razorpay credentials:
+Fill in your credentials:
 - `RAZORPAY_KEY_ID` - Your Razorpay Key ID
 - `RAZORPAY_KEY_SECRET` - Your Razorpay Key Secret
 - `NEXT_PUBLIC_RAZORPAY_KEY_ID` - Same as RAZORPAY_KEY_ID (for client-side)
+- `OPENAI_API_KEY` - Your OpenAI API key for AI-generated verdicts
 
 3. Run development server:
 ```bash
@@ -64,12 +65,14 @@ The app is ready for production deployment.
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Styling
 - **Razorpay** - Payment gateway
+- **OpenAI** - AI-powered verdict generation
 - **Vercel** - Deployment platform
 
 ## Notes
 
 - No user authentication or accounts
 - No data persistence (stateless)
-- Deterministic verdict logic based on input
+- AI-powered verdicts using OpenAI GPT-4o-mini
+- Fallback to deterministic logic if AI is unavailable
 - Mobile-first, responsive design
 
