@@ -108,9 +108,11 @@ function VerdictContent() {
           <h2 className="text-5xl md:text-6xl font-bold print:text-black">
             {verdictData.verdict}
           </h2>
-          <p className="text-lg text-gray-300 print:text-black">
-            {verdictData.justification}
-          </p>
+          <div className="text-left space-y-4">
+            <p className="text-base md:text-lg text-gray-300 leading-relaxed print:text-black">
+              {verdictData.justification}
+            </p>
+          </div>
           <p className="text-sm text-gray-500 print:text-gray-700">
             The decision is made. Move forward.
           </p>

@@ -16,15 +16,15 @@ const getOpenAIClient = () => {
 const VERDICT_TYPES: Record<string, { verdicts: string[], prompt: string }> = {
   'yes-no': {
     verdicts: ['YES', 'NO'],
-    prompt: 'Give a clear YES or NO answer, then provide a brief, mystical, and confident justification (1-2 sentences). Be decisive and wise.',
+    prompt: 'Analyze their specific situation deeply. Give a clear YES or NO verdict, then provide personalized, detailed advice (3-5 sentences) that: references specific details they mentioned, explains why this answer serves their unique circumstances, offers wisdom tailored to their situation, and helps them understand the path forward. Be mystical yet practical, decisive yet empathetic.',
   },
   'this-that': {
     verdicts: ['THIS', 'THAT'],
-    prompt: 'Choose either THIS or THAT, then provide a brief, mystical, and confident justification (1-2 sentences) explaining why this choice serves them better. Be decisive and wise.',
+    prompt: 'Carefully consider both options they presented. Choose either THIS or THAT, then provide personalized, detailed advice (3-5 sentences) that: analyzes the specific details they shared about each option, explains why your chosen option aligns better with their unique situation and goals, references what they mentioned to show you understand their context, and offers wisdom that feels tailored specifically to them. Be mystical yet practical, decisive yet empathetic.',
   },
   'now-later': {
     verdicts: ['NOW', 'LATER'],
-    prompt: 'Decide whether NOW or LATER is better, then provide a brief, mystical, and confident justification (1-2 sentences). Be decisive and wise.',
+    prompt: 'Consider their specific situation and circumstances. Decide whether NOW or LATER is better, then provide personalized, detailed advice (3-5 sentences) that: references the specific details they shared about their situation, explains why the timing you chose aligns with their unique circumstances, considers what they mentioned about their current state and readiness, and offers wisdom that feels tailored specifically to them. Be mystical yet practical, decisive yet empathetic.',
   },
 }
 
@@ -51,15 +51,18 @@ export async function POST(request: NextRequest) {
     
     if (openai) {
       // Use AI to generate verdict
-      const systemPrompt = `You are a wise, mystical decision advisor. Your role is to provide clear, confident verdicts that help people move forward. 
-Your responses should be:
-- Decisive and confident
-- Mystical but not vague
-- Brief (1-2 sentences for justification)
-- Empowering and actionable
-- Match the tone: "The path forward is clear. Trust it." or "Not now. The timing isn't right."
+      const systemPrompt = `You are a wise, mystical decision advisor who provides deeply personalized guidance. Your role is to:
+- Analyze the user's specific situation in detail
+- Reference specific details they mentioned to show you understand their unique circumstances
+- Provide personalized advice that feels tailored to them, not generic
+- Be decisive and confident while remaining empathetic
+- Use a mystical yet practical tone that empowers them
+- Give detailed justifications (3-5 sentences) that elaborate on their situation
+- Make them feel heard and understood
 
-Format your response as JSON: {"verdict": "YES/NO/THIS/THAT/NOW/LATER", "justification": "your brief mystical justification"}`
+Your justifications should feel like personalized counsel, not generic advice. Reference what they said, acknowledge their specific circumstances, and provide wisdom that applies directly to their situation.
+
+Format your response as JSON: {"verdict": "YES/NO/THIS/THAT/NOW/LATER", "justification": "your detailed personalized justification (3-5 sentences)"}`
 
       const userPrompt = `${verdictConfig.prompt}
 
@@ -74,8 +77,8 @@ Respond with only valid JSON in this exact format:
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        temperature: 0.7,
-        max_tokens: 150,
+        temperature: 0.8,
+        max_tokens: 300,
         response_format: { type: 'json_object' },
       })
 
