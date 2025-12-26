@@ -1,17 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-// Initialize OpenAI only if API key is available
-const getOpenAIClient = () => {
-  const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey) {
-    return null
-  }
-  return new OpenAI({ apiKey })
-}
+const HF_MODEL = 'mistralai/Mistral-7B-Instruct-v0.3'
+const HF_URL = `https://api-inference.huggingface.co/models/${HF_MODEL}`
 
 const VERDICT_TYPES: Record<string, { verdicts: string[], prompt: string }> = {
   'yes-no': {
@@ -26,6 +19,39 @@ const VERDICT_TYPES: Record<string, { verdicts: string[], prompt: string }> = {
     verdicts: ['NOW', 'LATER'],
     prompt: 'Consider their specific situation and circumstances. Decide whether NOW or LATER is better, then provide personalized, detailed advice (3-5 sentences) that: references the specific details they shared about their situation, explains why the timing you chose aligns with their unique circumstances, considers what they mentioned about their current state and readiness, and offers wisdom that feels tailored specifically to them. Be mystical yet practical, decisive yet empathetic.',
   },
+}
+
+async function generateWithHuggingFace(prompt: string) {
+  const token = process.env.HF_API_TOKEN
+  if (!token) {
+    console.log('HF_API_TOKEN not set, skipping HF generation')
+    return null
+  }
+
+  const response = await fetch(HF_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      inputs: prompt,
+      parameters: {
+        temperature: 0.8,
+        max_new_tokens: 300,
+        return_full_text: false,
+      },
+    }),
+  })
+
+  if (!response.ok) {
+    console.error('Hugging Face error', response.status, await response.text())
+    return null
+  }
+
+  const data = await response.json()
+  const text = Array.isArray(data) ? data[0]?.generated_text : data?.generated_text || data?.output
+  return typeof text === 'string' ? text : null
 }
 
 export async function POST(request: NextRequest) {
@@ -46,98 +72,91 @@ export async function POST(request: NextRequest) {
 
     const verdictConfig = VERDICT_TYPES[type] || VERDICT_TYPES['yes-no']
 
-    // Check if OpenAI API key is available
-    const openai = getOpenAIClient()
-    
-    if (!openai) {
-      console.log('OpenAI API key not found, using fallback')
-    }
-    
-    if (openai) {
-      console.log('Using AI to generate personalized verdict for:', input.substring(0, 50))
-      // Use AI to generate verdict
-      const systemPrompt = `You are a wise, mystical decision advisor. CRITICAL INSTRUCTIONS:
+    // Build the HF prompt
+    const systemPrompt = `You are a wise, mystical decision advisor. CRITICAL INSTRUCTIONS:
 
-1. You MUST read the user's input carefully and extract specific details they mentioned
-2. Your justification MUST be 4-6 sentences minimum (aim for 5-7 sentences)
-3. You MUST reference specific words, details, or circumstances from their input
-4. DO NOT give generic advice like "This aligns better" or "The path forward is clear"
-5. DO NOT use vague statements without context
-6. Your response should feel like personalized counsel, not a template
+1. Read the user's input carefully and extract specific details they mentioned
+2. Justification MUST be 4-6 sentences (aim 5-7) and reference their details
+3. Avoid generic advice like "This aligns better" or "The path forward is clear"
+4. Provide personalized counsel, mystical yet practical
 
-GOOD EXAMPLE (for "Should I quit my job? I'm stressed and my boss is toxic"):
-"Given that you mentioned your boss is toxic and you're experiencing stress, this environment is draining your energy in ways that won't resolve themselves. The toxicity you're facing suggests this isn't just a temporary challenge - it's a pattern that affects your wellbeing. Leaving now allows you to protect your mental health and find a space where you can thrive. The stress you're carrying isn't worth staying for. Trust that better opportunities await when you're not weighed down by this situation."
+Format strictly as JSON: {"verdict": "YES/NO/THIS/THAT/NOW/LATER", "justification": "detailed justification"}`
 
-BAD EXAMPLE (too generic):
-"The path forward is clear. Trust it."
-
-Format your response as JSON: {"verdict": "YES/NO/THIS/THAT/NOW/LATER", "justification": "your detailed personalized justification (minimum 4-6 sentences, ideally 5-7)"}`
-
-      const userPrompt = `Read the user's situation carefully. Extract specific details, words, and circumstances they mentioned.
+    const userPrompt = `Decision type: ${type}
 
 ${verdictConfig.prompt}
 
 User's situation: "${input}"
 
-IMPORTANT: Your justification MUST reference specific details from their situation above. Write 4-6 sentences that show you understand their unique circumstances. Be detailed and personalized, not generic.
+Respond ONLY with valid JSON as described above. Include specific details from the situation.`
 
-Respond with only valid JSON in this exact format:
-{"verdict": "VERDICT", "justification": "your detailed personalized justification"}`
-
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: 0.9,
-        max_tokens: 400,
-        response_format: { type: 'json_object' },
-      })
-
-      const content = completion.choices[0]?.message?.content
-      if (content) {
-        const result = JSON.parse(content)
-        
-        console.log('AI generated verdict:', result.verdict, 'Justification length:', result.justification?.length)
-        
-        // Validate verdict is one of the allowed options
-        if (!verdictConfig.verdicts.includes(result.verdict)) {
-          // Fallback: use hash-based selection if AI returns invalid verdict
-          const hash = input.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-          result.verdict = verdictConfig.verdicts[hash % verdictConfig.verdicts.length]
+    // Try Hugging Face first
+    const hfText = await generateWithHuggingFace(`${systemPrompt}\n\n${userPrompt}`)
+    if (hfText) {
+      try {
+        const parsed = JSON.parse(hfText)
+        if (!parsed.verdict || !parsed.justification) {
+          throw new Error('Missing fields')
         }
 
-        // Ensure justification is detailed enough
-        if (!result.justification || result.justification.length < 100) {
-          console.warn('AI justification too short, regenerating...')
-          throw new Error('Justification too short, need more detail')
+        // Validate verdict is one of the allowed options
+        if (!verdictConfig.verdicts.includes(parsed.verdict)) {
+          const hash = input.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+          parsed.verdict = verdictConfig.verdicts[hash % verdictConfig.verdicts.length]
         }
 
         return NextResponse.json({
-          verdict: result.verdict,
-          justification: result.justification || 'The decision is made. Move forward.',
+          verdict: parsed.verdict,
+          justification: parsed.justification,
         })
+      } catch (err) {
+        console.warn('HF response not JSON, falling back', err)
       }
     }
-    
-    // Fall through to fallback if no API key or AI fails
+
+    // Fall through to fallback if HF not available or failed
     throw new Error('AI not available, using fallback')
   } catch (error: any) {
-    console.error('Verdict generation error:', error)
+    console.error('AI generation unavailable, using fallback:', error?.message || error)
     
     // Fallback to deterministic verdict if AI fails
     const verdictConfig = VERDICT_TYPES[type] || VERDICT_TYPES['yes-no']
     const hash = (input || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
-    const fallbackVerdicts = {
-      'yes-no': ['The path forward is clear. Trust it.', 'Not now. The timing isn\'t right.'],
-      'this-that': ['This aligns better with where you\'re heading.', 'That option serves you more in the long run.'],
-      'now-later': ['Act now. Waiting won\'t improve this.', 'Later. The timing needs to be right.'],
+    
+    // Enhanced fallback justifications that are slightly more contextual
+    const fallbackVerdicts: Record<string, string[]> = {
+      'yes-no': [
+        'The path forward is clear. Trust it.',
+        'Not now. The timing isn\'t right.',
+        'Your hesitation is the answer. Say no.',
+        'The signs point to yes. Act on it.',
+        'This isn\'t the right move. Decline.',
+        'Yes. Stop overthinking and proceed.',
+      ],
+      'this-that': [
+        'This aligns better with where you\'re heading.',
+        'That option serves you more in the long run.',
+        'This is the clearer choice. Choose it.',
+        'That path offers more growth. Take it.',
+        'This feels right. Trust that feeling.',
+        'That option is the wiser move.',
+      ],
+      'now-later': [
+        'Act now. Waiting won\'t improve this.',
+        'Later. The timing needs to be right.',
+        'Now is the moment. Don\'t delay.',
+        'Wait. Better conditions are coming.',
+        'Strike now. The opportunity is here.',
+        'Later. You\'re not ready yet.',
+      ],
     }
+    
+    const justifications = fallbackVerdicts[type] || fallbackVerdicts['yes-no']
+    const justificationIndex = hash % justifications.length
     
     return NextResponse.json({
       verdict: verdictConfig.verdicts[hash % verdictConfig.verdicts.length],
-      justification: fallbackVerdicts[type as keyof typeof fallbackVerdicts]?.[hash % 2] || 'The decision is made. Move forward.',
+      justification: justifications[justificationIndex] || 'The decision is made. Move forward.',
     })
   }
 }
