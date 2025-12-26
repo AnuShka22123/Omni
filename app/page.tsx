@@ -20,6 +20,14 @@ export default function Home() {
         >
           Get a Verdict
         </button>
+        <p className="mt-8">
+          <button
+            onClick={() => router.push('/about')}
+            className="text-sm text-gray-500 hover:text-gray-300 transition-colors underline underline-offset-4"
+          >
+            About Us
+          </button>
+        </p>
       </div>
     </main>
   )
