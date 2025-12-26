@@ -49,27 +49,40 @@ export async function POST(request: NextRequest) {
     // Check if OpenAI API key is available
     const openai = getOpenAIClient()
     
+    if (!openai) {
+      console.log('OpenAI API key not found, using fallback')
+    }
+    
     if (openai) {
+      console.log('Using AI to generate personalized verdict for:', input.substring(0, 50))
       // Use AI to generate verdict
-      const systemPrompt = `You are a wise, mystical decision advisor who provides deeply personalized guidance. Your role is to:
-- Analyze the user's specific situation in detail
-- Reference specific details they mentioned to show you understand their unique circumstances
-- Provide personalized advice that feels tailored to them, not generic
-- Be decisive and confident while remaining empathetic
-- Use a mystical yet practical tone that empowers them
-- Give detailed justifications (3-5 sentences) that elaborate on their situation
-- Make them feel heard and understood
+      const systemPrompt = `You are a wise, mystical decision advisor. CRITICAL INSTRUCTIONS:
 
-Your justifications should feel like personalized counsel, not generic advice. Reference what they said, acknowledge their specific circumstances, and provide wisdom that applies directly to their situation.
+1. You MUST read the user's input carefully and extract specific details they mentioned
+2. Your justification MUST be 4-6 sentences minimum (aim for 5-7 sentences)
+3. You MUST reference specific words, details, or circumstances from their input
+4. DO NOT give generic advice like "This aligns better" or "The path forward is clear"
+5. DO NOT use vague statements without context
+6. Your response should feel like personalized counsel, not a template
 
-Format your response as JSON: {"verdict": "YES/NO/THIS/THAT/NOW/LATER", "justification": "your detailed personalized justification (3-5 sentences)"}`
+GOOD EXAMPLE (for "Should I quit my job? I'm stressed and my boss is toxic"):
+"Given that you mentioned your boss is toxic and you're experiencing stress, this environment is draining your energy in ways that won't resolve themselves. The toxicity you're facing suggests this isn't just a temporary challenge - it's a pattern that affects your wellbeing. Leaving now allows you to protect your mental health and find a space where you can thrive. The stress you're carrying isn't worth staying for. Trust that better opportunities await when you're not weighed down by this situation."
 
-      const userPrompt = `${verdictConfig.prompt}
+BAD EXAMPLE (too generic):
+"The path forward is clear. Trust it."
+
+Format your response as JSON: {"verdict": "YES/NO/THIS/THAT/NOW/LATER", "justification": "your detailed personalized justification (minimum 4-6 sentences, ideally 5-7)"}`
+
+      const userPrompt = `Read the user's situation carefully. Extract specific details, words, and circumstances they mentioned.
+
+${verdictConfig.prompt}
 
 User's situation: "${input}"
 
+IMPORTANT: Your justification MUST reference specific details from their situation above. Write 4-6 sentences that show you understand their unique circumstances. Be detailed and personalized, not generic.
+
 Respond with only valid JSON in this exact format:
-{"verdict": "VERDICT", "justification": "justification text"}`
+{"verdict": "VERDICT", "justification": "your detailed personalized justification"}`
 
       const completion = await openai.chat.completions.create({
         model: 'gpt-4o-mini',
@@ -77,8 +90,8 @@ Respond with only valid JSON in this exact format:
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
-        temperature: 0.8,
-        max_tokens: 300,
+        temperature: 0.9,
+        max_tokens: 400,
         response_format: { type: 'json_object' },
       })
 
@@ -86,11 +99,19 @@ Respond with only valid JSON in this exact format:
       if (content) {
         const result = JSON.parse(content)
         
+        console.log('AI generated verdict:', result.verdict, 'Justification length:', result.justification?.length)
+        
         // Validate verdict is one of the allowed options
         if (!verdictConfig.verdicts.includes(result.verdict)) {
           // Fallback: use hash-based selection if AI returns invalid verdict
           const hash = input.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
           result.verdict = verdictConfig.verdicts[hash % verdictConfig.verdicts.length]
+        }
+
+        // Ensure justification is detailed enough
+        if (!result.justification || result.justification.length < 100) {
+          console.warn('AI justification too short, regenerating...')
+          throw new Error('Justification too short, need more detail')
         }
 
         return NextResponse.json({
