@@ -85,7 +85,7 @@ function VerdictContent() {
     <main className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 opacity-60 bg-[radial-gradient(circle_at_22%_20%,rgba(255,255,255,0.05),transparent_35%),radial-gradient(circle_at_80%_5%,rgba(99,102,241,0.07),transparent_30%)]" />
       <div className="pointer-events-none absolute inset-0 opacity-15 mix-blend-soft-light bg-[radial-gradient(circle_at_50%_115%,rgba(255,255,255,0.08),transparent_50%)]" />
-      <div className="relative w-full max-w-md space-y-8">
+      <div className="relative w-full max-w-md space-y-8 bg-dark-surface/60 border border-dark-border/70 backdrop-blur rounded-md p-6 md:p-8 shadow-[0_0_50px_-20px_rgba(99,102,241,0.6)]">
         <div className="bg-dark-surface border border-dark-border p-8 rounded-sm text-center space-y-6 print:bg-white print:border-black print:text-black">
           <h2 className="text-5xl md:text-6xl font-bold print:text-black">
             {verdictData.verdict}

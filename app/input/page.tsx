@@ -25,7 +25,7 @@ function InputForm() {
     <main className="min-h-screen flex items-center justify-center px-4 py-12 relative overflow-hidden">
       <div className="pointer-events-none absolute inset-0 opacity-60 bg-[radial-gradient(circle_at_18%_20%,rgba(255,255,255,0.05),transparent_35%),radial-gradient(circle_at_82%_12%,rgba(99,102,241,0.07),transparent_30%)]" />
       <div className="pointer-events-none absolute inset-0 opacity-15 mix-blend-soft-light bg-[radial-gradient(circle_at_50%_115%,rgba(255,255,255,0.08),transparent_50%)]" />
-      <div className="relative w-full max-w-md space-y-8">
+      <div className="relative w-full max-w-md space-y-8 bg-dark-surface/60 border border-dark-border/70 backdrop-blur rounded-md p-6 md:p-8 shadow-[0_0_50px_-20px_rgba(99,102,241,0.6)]">
         <p className="text-center text-gray-400 text-sm">
           You're about to receive a verdict. Don't use this lightly.
         </p>

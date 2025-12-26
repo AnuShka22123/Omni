@@ -112,7 +112,7 @@ function PaymentForm() {
       <main className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 opacity-60 bg-[radial-gradient(circle_at_25%_15%,rgba(255,255,255,0.05),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(99,102,241,0.07),transparent_30%)]" />
         <div className="pointer-events-none absolute inset-0 opacity-15 mix-blend-soft-light bg-[radial-gradient(circle_at_50%_110%,rgba(255,255,255,0.08),transparent_50%)]" />
-        <div className="relative text-center">
+        <div className="relative text-center w-full max-w-md bg-dark-surface/60 border border-dark-border/70 backdrop-blur rounded-md px-6 py-10 shadow-[0_0_50px_-20px_rgba(99,102,241,0.6)]">
           {error ? (
             <div className="space-y-4">
               <p className="text-red-400 mb-4">{error}</p>
