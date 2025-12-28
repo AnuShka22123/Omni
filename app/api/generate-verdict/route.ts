@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 const HF_MODEL = 'mistralai/Mistral-7B-Instruct-v0.3'
-const HF_URL = `https://api-inference.huggingface.co/models/${HF_MODEL}`
+const HF_URL = `https://router.huggingface.co/models/${HF_MODEL}`
 
 const VERDICT_TYPES: Record<string, { verdicts: string[], prompt: string }> = {
   'yes-no': {
