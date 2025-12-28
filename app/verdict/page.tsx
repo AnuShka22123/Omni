@@ -31,22 +31,22 @@ async function getVerdict(type: string, input: string): Promise<{ verdict: strin
       'yes-no': {
         verdicts: ['YES', 'NO'],
         justifications: [
-          'The path forward is clear. Trust it.',
-          'Not now. The timing isn\'t right.',
+          'This decision is emotional, not strategic.',
+          'Waiting reduces risk. Acting now increases regret.',
         ],
       },
       'this-that': {
         verdicts: ['THIS', 'THAT'],
         justifications: [
-          'This aligns better with where you\'re heading.',
-          'That option serves you more in the long run.',
+          'This option reduces complexity.',
+          'That path minimizes future conflict.',
         ],
       },
       'now-later': {
         verdicts: ['NOW', 'LATER'],
         justifications: [
-          'Act now. Waiting won\'t improve this.',
-          'Later. The timing needs to be right.',
+          'This is not the right moment.',
+          'Delay increases certainty.',
         ],
       },
     }
@@ -93,7 +93,7 @@ function VerdictContent() {
         <div className="pointer-events-none absolute inset-0 opacity-60 bg-[radial-gradient(circle_at_22%_20%,rgba(255,255,255,0.05),transparent_35%),radial-gradient(circle_at_80%_5%,rgba(99,102,241,0.07),transparent_30%)]" />
         <div className="pointer-events-none absolute inset-0 opacity-15 mix-blend-soft-light bg-[radial-gradient(circle_at_50%_115%,rgba(255,255,255,0.08),transparent_50%)]" />
         <div className="relative text-center">
-          <p className="text-xl text-gray-300 animate-pulse">Delivering verdict...</p>
+          <p className="text-xl text-gray-300 animate-pulse">Generating outcome...</p>
         </div>
       </main>
     )
@@ -108,13 +108,11 @@ function VerdictContent() {
           <h2 className="text-5xl md:text-6xl font-bold print:text-black">
             {verdictData.verdict}
           </h2>
-          <div className="text-left space-y-4">
-            <p className="text-base md:text-lg text-gray-300 leading-relaxed print:text-black">
-              {verdictData.justification}
-            </p>
-          </div>
+          <p className="text-base md:text-lg text-gray-300 print:text-black">
+            {verdictData.justification}
+          </p>
           <p className="text-sm text-gray-500 print:text-gray-700">
-            The decision is made. Move forward.
+            Outcome finalized. No further input required.
           </p>
         </div>
 
@@ -123,13 +121,13 @@ function VerdictContent() {
             onClick={() => router.push('/select')}
             className="w-full py-4 px-8 bg-white text-black font-medium text-lg rounded-sm hover:bg-gray-100 transition-colors hover:-translate-y-0.5 transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
-            Another Decision – ₹5
+            New Verdict – ₹5
           </button>
           <button
             onClick={() => window.print()}
             className="w-full py-4 px-8 bg-dark-surface border border-dark-border text-white font-medium text-lg rounded-sm hover:border-white transition-colors hover:-translate-y-0.5 transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
-            Save Verdict
+            Save Record
           </button>
         </div>
       </div>

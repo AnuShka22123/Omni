@@ -27,7 +27,7 @@ export default function Home() {
             onClick={() => router.push('/about')}
             className="text-sm text-gray-500 hover:text-gray-300 transition-colors underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
-            About Us
+            System
           </button>
         </p>
       </div>

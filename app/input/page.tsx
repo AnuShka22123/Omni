@@ -27,7 +27,7 @@ function InputForm() {
       <div className="pointer-events-none absolute inset-0 opacity-15 mix-blend-soft-light bg-[radial-gradient(circle_at_50%_115%,rgba(255,255,255,0.08),transparent_50%)]" />
       <div className="relative w-full max-w-md space-y-8 bg-dark-surface/60 border border-dark-border/70 backdrop-blur rounded-md p-6 md:p-8 shadow-[0_0_50px_-20px_rgba(99,102,241,0.6)]">
         <p className="text-center text-gray-400 text-sm">
-          You're about to receive a verdict. Don't use this lightly.
+          Enter your situation clearly. Ambiguity weakens outcomes.
         </p>
         
         <div>
@@ -38,7 +38,7 @@ function InputForm() {
                 setInput(e.target.value)
               }
             }}
-            placeholder="Describe your situation in one or two honest lines."
+            placeholder="State the decision. No context required."
             className="w-full h-32 px-4 py-3 bg-dark-surface border border-dark-border text-white placeholder-gray-500 rounded-sm resize-none focus:outline-none focus:border-white focus:ring-2 focus:ring-white/40 transition-colors"
           />
           <p className="text-right text-xs text-gray-500 mt-1">
@@ -63,7 +63,7 @@ function InputForm() {
           disabled={!accepted || input.trim().length === 0}
           className="w-full py-4 px-8 bg-white text-black font-medium text-lg rounded-sm hover:bg-gray-100 transition-colors hover:-translate-y-0.5 transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:translate-y-0"
         >
-          Unlock Verdict – ₹5
+          Generate Verdict – ₹5
         </button>
       </div>
     </main>

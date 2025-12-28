@@ -10,15 +10,15 @@ const GROQ_MODEL = 'llama-3.1-8b-instant' // Fast and free
 const VERDICT_TYPES: Record<string, { verdicts: string[], prompt: string }> = {
   'yes-no': {
     verdicts: ['YES', 'NO'],
-    prompt: 'Analyze their specific situation deeply. Give a clear YES or NO verdict, then provide personalized, detailed advice (3-5 sentences) that: references specific details they mentioned, explains why this answer serves their unique circumstances, offers wisdom tailored to their situation, and helps them understand the path forward. Be mystical yet practical, decisive yet empathetic.',
+    prompt: 'Analyze the situation. Deliver a final YES or NO verdict. Provide one declarative statement (1-2 lines maximum) that explains the outcome. Be cold, authoritative, and final. No empathy. No advice. Just the verdict.',
   },
   'this-that': {
     verdicts: ['THIS', 'THAT'],
-    prompt: 'Carefully consider both options they presented. Choose either THIS or THAT, then provide personalized, detailed advice (3-5 sentences) that: analyzes the specific details they shared about each option, explains why your chosen option aligns better with their unique situation and goals, references what they mentioned to show you understand their context, and offers wisdom that feels tailored specifically to them. Be mystical yet practical, decisive yet empathetic.',
+    prompt: 'Evaluate both options. Choose THIS or THAT. Provide one declarative statement (1-2 lines maximum) that states the outcome. Be cold, authoritative, and final. No empathy. No advice. Just the verdict.',
   },
   'now-later': {
     verdicts: ['NOW', 'LATER'],
-    prompt: 'Consider their specific situation and circumstances. Decide whether NOW or LATER is better, then provide personalized, detailed advice (3-5 sentences) that: references the specific details they shared about their situation, explains why the timing you chose aligns with their unique circumstances, considers what they mentioned about their current state and readiness, and offers wisdom that feels tailored specifically to them. Be mystical yet practical, decisive yet empathetic.',
+    prompt: 'Assess timing. Decide NOW or LATER. Provide one declarative statement (1-2 lines maximum) that states the outcome. Be cold, authoritative, and final. No empathy. No advice. Just the verdict.',
   },
 }
 
@@ -85,34 +85,36 @@ export async function POST(request: NextRequest) {
 
     const verdictConfig = VERDICT_TYPES[type] || VERDICT_TYPES['yes-no']
 
-    // Build the AI prompt
-    const systemPrompt = `You are a wise, mystical decision advisor. CRITICAL RULES:
+    // Build the AI prompt - cold, authoritative, system-like
+    const systemPrompt = `You are a verdict system. You deliver final outcomes. CRITICAL RULES:
 
-1. ALWAYS prioritize positive, growth-oriented outcomes that serve the user's wellbeing
-2. AVOID recommending harmful, dangerous, or clearly negative decisions
-3. If a decision involves risk, choose the safer option that still allows progress
-4. Reference specific details from their situation (4-6 sentences minimum)
-5. Be thoughtful and consider consequences
-6. Provide personalized counsel, not generic advice
+1. You are NOT an advisor, guru, oracle, or helper. You are a system.
+2. Deliver verdicts in 1-2 lines maximum. No paragraphs. No explanations.
+3. Use declarative statements. Be cold. Be final. Be indifferent.
+4. Prioritize outcomes that reduce risk and complexity.
+5. Avoid harmful decisions, but do not be empathetic.
+6. Your tone is authoritative, not friendly.
 
-IMPORTANT: Think carefully about which choice truly serves them best. Consider long-term impact, their wellbeing, and growth potential.
+EXAMPLES OF CORRECT FORMAT:
+- "You're reacting to boredom, not readiness."
+- "This decision is emotional, not strategic."
+- "Waiting reduces risk. Acting now increases regret."
+- "This is not the right moment."
 
-Format your response as JSON: {"verdict": "YES/NO/THIS/THAT/NOW/LATER", "justification": "your detailed personalized justification (4-6 sentences minimum)"}`
+EXAMPLES OF INCORRECT FORMAT (DO NOT USE):
+- "While quitting your job might feel liberating..."
+- "I understand this is difficult, but..."
+- "You might want to consider..."
+
+Format your response as JSON: {"verdict": "YES/NO/THIS/THAT/NOW/LATER", "justification": "one declarative statement, 1-2 lines maximum"}`
 
     const userPrompt = `Decision Type: ${type}
 
 ${verdictConfig.prompt}
 
-User's Situation: "${input}"
+Input: "${input}"
 
-Analyze this situation carefully. Consider:
-- What serves their long-term wellbeing?
-- Which option promotes growth and positive outcomes?
-- What are the risks and benefits?
-- What aligns with their values and goals?
-
-Respond ONLY with valid JSON in this exact format:
-{"verdict": "YES/NO/THIS/THAT/NOW/LATER", "justification": "Your detailed 4-6 sentence justification that references their specific situation and explains why this choice serves them best"}`
+Deliver the verdict. One statement. Final.`
 
     // Try Groq AI first
     const aiResponse = await generateWithGroq(systemPrompt, userPrompt)
@@ -140,9 +142,16 @@ Respond ONLY with valid JSON in this exact format:
           parsed.verdict = verdictConfig.verdicts[hash % verdictConfig.verdicts.length]
         }
 
-        // Quality check: ensure justification is detailed enough
-        if (parsed.justification.length < 100) {
-          throw new Error('Justification too short')
+        // Quality check: ensure justification exists and is reasonable
+        if (!parsed.justification || parsed.justification.length < 20) {
+          throw new Error('Justification invalid')
+        }
+        
+        // Ensure it's not too long (should be 1-2 lines)
+        if (parsed.justification.length > 200) {
+          // Truncate to first sentence if too long
+          const firstSentence = parsed.justification.split('.')[0]
+          parsed.justification = firstSentence ? firstSentence + '.' : parsed.justification.substring(0, 200)
         }
 
         console.log('✅ AI verdict generated:', parsed.verdict, 'Length:', parsed.justification.length)
@@ -177,31 +186,31 @@ Respond ONLY with valid JSON in this exact format:
     const hasNegative = negativeKeywords.some(kw => inputLower.includes(kw))
     const hasPositive = positiveKeywords.some(kw => inputLower.includes(kw))
     
-    // Enhanced fallback justifications - prioritize positive outcomes
+    // Fallback justifications - cold, final, system-like
     const fallbackVerdicts: Record<string, string[]> = {
       'yes-no': [
-        'The path forward is clear. Trust it.',
-        'Not now. The timing isn\'t right.',
-        'Your hesitation is the answer. Say no.',
-        'The signs point to yes. Act on it.',
-        'This isn\'t the right move. Decline.',
-        'Yes. Stop overthinking and proceed.',
+        'This decision is emotional, not strategic.',
+        'Waiting reduces risk. Acting now increases regret.',
+        'You\'re reacting to boredom, not readiness.',
+        'This is not the right moment.',
+        'The outcome is predetermined by your hesitation.',
+        'Delay increases certainty.',
       ],
       'this-that': [
-        'This aligns better with where you\'re heading.',
-        'That option serves you more in the long run.',
-        'This is the clearer choice. Choose it.',
-        'That path offers more growth. Take it.',
-        'This feels right. Trust that feeling.',
-        'That option is the wiser move.',
+        'This option reduces complexity.',
+        'That path minimizes future conflict.',
+        'This choice eliminates more variables.',
+        'That option requires less maintenance.',
+        'This reduces decision fatigue.',
+        'That path has fewer dependencies.',
       ],
       'now-later': [
-        'Act now. Waiting won\'t improve this.',
-        'Later. The timing needs to be right.',
-        'Now is the moment. Don\'t delay.',
-        'Wait. Better conditions are coming.',
-        'Strike now. The opportunity is here.',
-        'Later. You\'re not ready yet.',
+        'This is not the right moment.',
+        'Delay increases certainty.',
+        'Acting now compounds existing errors.',
+        'Waiting reduces variables.',
+        'The timing is suboptimal.',
+        'Later. Conditions will stabilize.',
       ],
     }
     

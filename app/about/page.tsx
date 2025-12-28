@@ -18,10 +18,10 @@ export default function AboutPage() {
       <div className={`relative w-full max-w-2xl space-y-12 bg-dark-surface/60 border border-dark-border/70 backdrop-blur rounded-md p-6 md:p-10 shadow-[0_0_50px_-20px_rgba(99,102,241,0.6)] transition-opacity duration-1000 ${mounted ? 'opacity-100' : 'opacity-0'}`}>
         <div className="text-center space-y-4">
           <h1 className="text-4xl md:text-5xl font-light text-balance">
-            About Us
+            System
           </h1>
           <p className="text-lg text-gray-400 text-balance">
-            When indecision becomes paralysis, we provide clarity.
+            Verdict generation system.
           </p>
         </div>
 
@@ -29,29 +29,26 @@ export default function AboutPage() {
           <section className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="h-px bg-dark-border flex-1"></div>
-              <h2 className="text-xl font-light text-white tracking-wide">What We Do</h2>
+              <h2 className="text-xl font-light text-white tracking-wide">Function</h2>
               <div className="h-px bg-dark-border flex-1"></div>
             </div>
             <p className="pl-2">
-              We help you make small, personal decisions when you're stuck. 
-              Whether it's a yes or no, choosing between options, or deciding 
-              when to act—we provide a clear, confident verdict for ₹5.
+              Input decision. Pay ₹5. Receive verdict. Outcome finalized.
             </p>
           </section>
 
           <section className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="h-px bg-dark-border flex-1"></div>
-              <h2 className="text-xl font-light text-white tracking-wide">How It Works</h2>
+              <h2 className="text-xl font-light text-white tracking-wide">Process</h2>
               <div className="h-px bg-dark-border flex-1"></div>
             </div>
             <div className="space-y-3 pl-2">
               <p>
-                You describe your situation. You pay ₹5. We give you a verdict. 
-                The decision is made. You move forward.
+                State your situation. Payment processed. Verdict delivered. No further input required.
               </p>
-              <p className="text-gray-400 text-sm italic">
-                No accounts. No data stored. Just a simple, honest answer when you need it.
+              <p className="text-gray-400 text-sm">
+                No accounts. No data stored. Each verdict is independent.
               </p>
             </div>
           </section>
@@ -59,26 +56,11 @@ export default function AboutPage() {
           <section className="space-y-4">
             <div className="flex items-center gap-3">
               <div className="h-px bg-dark-border flex-1"></div>
-              <h2 className="text-xl font-light text-white tracking-wide">Why We Exist</h2>
+              <h2 className="text-xl font-light text-white tracking-wide">Payment</h2>
               <div className="h-px bg-dark-border flex-1"></div>
             </div>
             <p className="pl-2">
-              Sometimes the hardest part of a decision is making it. We remove 
-              the paralysis of choice by giving you a clear answer. The small 
-              payment ensures you value the outcome and commit to it.
-            </p>
-          </section>
-
-          <section className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="h-px bg-dark-border flex-1"></div>
-              <h2 className="text-xl font-light text-white tracking-wide">Payment & Privacy</h2>
-              <div className="h-px bg-dark-border flex-1"></div>
-            </div>
-            <p className="pl-2">
-              We use Razorpay for secure, UPI-friendly payments. We don't store 
-              your personal information or decision history. Each verdict is 
-              independent and private.
+              Razorpay processes payments. No personal information stored. Verdicts are private.
             </p>
           </section>
         </div>

@@ -6,9 +6,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 export const dynamic = 'force-dynamic'
 
 const messages = [
-  'Reading your situation…',
-  'Removing bias…',
-  'Delivering verdict…',
+  'Processing input…',
+  'Generating outcome…',
+  'Verdict delivered.',
 ]
 
 function LoadingContent() {
