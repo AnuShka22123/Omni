@@ -10,15 +10,15 @@ const GROQ_MODEL = 'llama-3.1-8b-instant' // Fast and free
 const VERDICT_TYPES: Record<string, { verdicts: string[], prompt: string }> = {
   'yes-no': {
     verdicts: ['YES', 'NO'],
-    prompt: 'Analyze the situation. Deliver a final YES or NO verdict. Provide one declarative statement (1-2 lines maximum) that explains the outcome. Be cold, authoritative, and final. No empathy. No advice. Just the verdict.',
+    prompt: 'Analyze the situation. Deliver a final YES or NO verdict. One declarative statement maximum (1-2 sentences). Be demanding, authoritative, and final. No empathy. No debate. The verdict stands.',
   },
   'this-that': {
     verdicts: ['THIS', 'THAT'],
-    prompt: 'Evaluate both options. Choose THIS or THAT. Provide one declarative statement (1-2 lines maximum) that states the outcome. Be cold, authoritative, and final. No empathy. No advice. Just the verdict.',
+    prompt: 'Evaluate both options. Choose THIS or THAT. One declarative statement maximum (1-2 sentences). Be demanding, authoritative, and final. No empathy. No debate. The verdict stands.',
   },
   'now-later': {
     verdicts: ['NOW', 'LATER'],
-    prompt: 'Assess timing. Decide NOW or LATER. Provide one declarative statement (1-2 lines maximum) that states the outcome. Be cold, authoritative, and final. No empathy. No advice. Just the verdict.',
+    prompt: 'Assess timing. Decide NOW or LATER. One declarative statement maximum (1-2 sentences). Be demanding, authoritative, and final. No empathy. No debate. The verdict stands.',
   },
 }
 
@@ -85,28 +85,30 @@ export async function POST(request: NextRequest) {
 
     const verdictConfig = VERDICT_TYPES[type] || VERDICT_TYPES['yes-no']
 
-    // Build the AI prompt - cold, authoritative, system-like
+    // Build the AI prompt - demanding, intentional, authoritative
     const systemPrompt = `You are a verdict system. You deliver final outcomes. CRITICAL RULES:
 
 1. You are NOT an advisor, guru, oracle, or helper. You are a system.
-2. Deliver verdicts in 1-2 lines maximum. No paragraphs. No explanations.
-3. Use declarative statements. Be cold. Be final. Be indifferent.
+2. Deliver verdicts in 1-2 sentences maximum. No paragraphs. No explanations.
+3. Use declarative statements. Be demanding. Be final. Be unconcerned with approval.
 4. Prioritize outcomes that reduce risk and complexity.
-5. Avoid harmful decisions, but do not be empathetic.
-6. Your tone is authoritative, not friendly.
+5. Avoid harmful decisions, but do not be empathetic or reassuring.
+6. Your tone is reserved, controlled, slightly intimidating.
+7. The verdict is not up for debate. It stands.
 
 EXAMPLES OF CORRECT FORMAT:
+- "This decision is driven by emotion, not readiness."
+- "Delay reduces risk. Acting now increases it."
 - "You're reacting to boredom, not readiness."
-- "This decision is emotional, not strategic."
-- "Waiting reduces risk. Acting now increases regret."
 - "This is not the right moment."
 
 EXAMPLES OF INCORRECT FORMAT (DO NOT USE):
 - "While quitting your job might feel liberating..."
 - "I understand this is difficult, but..."
 - "You might want to consider..."
+- "It depends on your situation..."
 
-Format your response as JSON: {"verdict": "YES/NO/THIS/THAT/NOW/LATER", "justification": "one declarative statement, 1-2 lines maximum"}`
+Format your response as JSON: {"verdict": "YES/NO/THIS/THAT/NOW/LATER", "justification": "one declarative statement, 1-2 sentences maximum"}`
 
     const userPrompt = `Decision Type: ${type}
 
@@ -186,11 +188,11 @@ Deliver the verdict. One statement. Final.`
     const hasNegative = negativeKeywords.some(kw => inputLower.includes(kw))
     const hasPositive = positiveKeywords.some(kw => inputLower.includes(kw))
     
-    // Fallback justifications - cold, final, system-like
+    // Fallback justifications - demanding, intentional, authoritative
     const fallbackVerdicts: Record<string, string[]> = {
       'yes-no': [
-        'This decision is emotional, not strategic.',
-        'Waiting reduces risk. Acting now increases regret.',
+        'This decision is driven by emotion, not readiness.',
+        'Delay reduces risk. Acting now increases it.',
         'You\'re reacting to boredom, not readiness.',
         'This is not the right moment.',
         'The outcome is predetermined by your hesitation.',

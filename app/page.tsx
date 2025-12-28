@@ -14,14 +14,17 @@ export default function Home() {
           Stuck on a decision?
         </h1>
         <p className="text-lg md:text-xl text-gray-400 mb-12 text-balance">
-          Pay ₹5. Get a verdict. Move on.
+          ₹5. One verdict. No debate.
         </p>
         <button
           onClick={() => router.push('/select')}
           className="w-full py-4 px-8 bg-white text-black font-medium text-lg rounded-sm hover:bg-gray-100 transition-colors hover:-translate-y-0.5 transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         >
-          Get a Verdict
+          Receive Verdict
         </button>
+        <p className="text-xs text-gray-500 mt-6">
+          Low cost by design. Overuse defeats clarity.
+        </p>
         <p className="mt-8">
           <button
             onClick={() => router.push('/about')}

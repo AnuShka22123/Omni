@@ -33,7 +33,7 @@ export default function AboutPage() {
               <div className="h-px bg-dark-border flex-1"></div>
             </div>
             <p className="pl-2">
-              Input decision. Pay ₹5. Receive verdict. Outcome finalized.
+              Input decision. Pay ₹5. Receive verdict. Outcome finalized. No debate.
             </p>
           </section>
 
@@ -48,7 +48,7 @@ export default function AboutPage() {
                 State your situation. Payment processed. Verdict delivered. No further input required.
               </p>
               <p className="text-gray-400 text-sm">
-                No accounts. No data stored. Each verdict is independent.
+                No accounts. No data stored. Each verdict is independent. ₹5 is intentional. The verdict is not.
               </p>
             </div>
           </section>

@@ -7,8 +7,8 @@ export const dynamic = 'force-dynamic'
 
 const messages = [
   'Processing input…',
-  'Generating outcome…',
-  'Verdict delivered.',
+  'Processing complete.',
+  'Verdict finalized.',
 ]
 
 function LoadingContent() {

@@ -111,8 +111,11 @@ function VerdictContent() {
           <p className="text-base md:text-lg text-gray-300 print:text-black">
             {verdictData.justification}
           </p>
-          <p className="text-sm text-gray-500 print:text-gray-700">
-            Outcome finalized. No further input required.
+          <p className="text-sm text-gray-500 print:text-gray-700 mt-4">
+            This outcome is final.
+          </p>
+          <p className="text-xs text-gray-600 print:text-gray-600 mt-2">
+            No further clarification provided.
           </p>
         </div>
 
@@ -121,7 +124,7 @@ function VerdictContent() {
             onClick={() => router.push('/select')}
             className="w-full py-4 px-8 bg-white text-black font-medium text-lg rounded-sm hover:bg-gray-100 transition-colors hover:-translate-y-0.5 transform focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
-            New Verdict – ₹5
+            Proceed to Verdict – ₹5
           </button>
           <button
             onClick={() => window.print()}
